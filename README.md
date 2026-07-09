@@ -2,8 +2,6 @@
 Helps people to write Wikitree Biographies and Converts WSYIWYG to Wikitree Markdown
 import os
 
-readme_content = """# WikiTree Markdown Companion
-
 An interactive, side-by-side WYSIWYG editor and WikiTree markup code generator. This utility bridges the gap for genealogists who prefer a visual formatting interface while strictly generating clean, platform-compliant WikiTree markdown code.
 
 ## 🚀 Live Demo & Usage
