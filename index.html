@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WikiTree Markdown & WYSIWYG Companion</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Custom styles to match the warm green and gold branding of WikiTree */
+        .brand-green { background-color: #4a773c; }
+        .brand-green-hover { background-color: #3b5f30; }
+        .brand-gold { background-color: #f6c038; }
+        .brand-light-gold { background-color: #fdf5df; }
+        .text-brand-green { color: #2e4c25; }
+        
+        /* WYSIWYG Custom Styles for live editing visual feedback */
+        .wysiwyg-editor {
+            outline: none;
+            min-height: 400px;
+        }
+        .wysiwyg-editor h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2e4c25;
+            border-bottom: 2px solid #e2e8f0;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.25rem;
+        }
+        .wysiwyg-editor h3 {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #4a753d;
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+        .wysiwyg-editor strong {
+            font-weight: bold;
+        }
+        .wysiwyg-editor em {
+            font-style: italic;
+        }
+        
+        /* Custom styled inline badges for WikiTree specific elements */
+        .wiki-link-internal {
+            display: inline-flex;
+            align-items: center;
+            background-color: #e6f4ea;
+            border: 1px dashed #34a853;
+            color: #137333;
+            border-radius: 4px;
+            padding: 1px 6px;
+            font-size: 0.9em;
+            margin: 0 2px;
+            user-select: none;
+        }
+        .wiki-link-external {
+            display: inline-flex;
+            align-items: center;
+            background-color: #f1f3f4;
+            border: 1px solid #dadce0;
+            color: #3c4043;
+            border-radius: 4px;
+            padding: 1px 6px;
+            font-size: 0.9em;
+            margin: 0 2px;
+            user-select: none;
+        }
+        .wiki-ref {
+            display: inline-block;
+            background-color: #fef7e0;
+            border: 1px solid #f2994a;
+            color: #c05621;
+            border-radius: 4px;
+            padding: 0px 4px;
+            font-size: 0.75em;
+            font-weight: bold;
+            vertical-align: super;
+            margin: 0 2px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .wiki-references-block {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-family: monospace;
+            color: #64748b;
+            margin-top: 1rem;
+            user-select: none;
+        }
+        .wiki-indent {
+            border-left: 3px solid #cbd5e1;
+            padding-left: 12px;
+            margin-top: 4px;
+            margin-bottom: 4px;
+        }
+        .wiki-li {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+        .wiki-li-2 {
+            list-style-type: circle;
+            margin-left: 40px;
+        }
+    </style>
+</head>
+<body class="bg-stone-50 min-h-screen text-slate-800 flex flex-col">
+
+    <!-- Header -->
+    <header class="brand-green text-white shadow-md py-4 px-6">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <!-- WikiTree Inspired Leaf Logo -->
+                <div class="bg-white p-2 rounded-full flex items-center justify-center shadow">
+                    <svg class="w-8 h-8 text-green-700" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold tracking-tight">WikiTree Markdown Companion</h1>
+                    <p class="text-xs text-green-100 font-medium">Visual editing meets WikiTree markup syntax safely and cleanly</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="loadTemplate('simple')" class="bg-green-800 hover:bg-green-900 text-white px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1 transition">
+                    <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Basic Template
+                </button>
+                <button onclick="loadTemplate('complex')" class="bg-green-800 hover:bg-green-900 text-white px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1 transition">
+                    <i data-lucide="file-plus" class="w-3.5 h-3.5"></i> Multi-Source Profile
+                </button>
+                <button onclick="openHelpModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition">
+                    <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Syntax Cheat Sheet
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
+        
+        <!-- Interactive Workspace Panels -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch flex-1">
+            
+            <!-- Left Panel: WYSIWYG Visual Editor -->
+            <div class="flex flex-col bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+                <!-- WYSIWYG Header / Toolbar -->
+                <div class="bg-slate-50 border-b border-slate-200 p-3 flex flex-wrap gap-1.5 items-center justify-between">
+                    <div class="flex items-center gap-1">
+                        <i data-lucide="eye" class="w-4 h-4 text-green-700 mr-1"></i>
+                        <span class="text-sm font-bold text-slate-700">WYSIWYG Editor</span>
+                    </div>
+                    <!-- Quick Format Badges -->
+                    <span class="text-[10px] bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Visual Draft</span>
+                </div>
+                
+                <!-- Expanded Rich Toolbar -->
+                <div class="bg-white border-b border-slate-100 p-2 flex flex-wrap gap-1 items-center bg-slate-50/50">
+                    <!-- Standard Text Formats -->
+                    <button onclick="formatDoc('bold')" title="Bold ('''text''')" class="p-1.5 hover:bg-slate-200 rounded text-slate-700 hover:text-slate-900 transition">
+                        <i data-lucide="bold" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="formatDoc('italic')" title="Italics (''text'')" class="p-1.5 hover:bg-slate-200 rounded text-slate-700 hover:text-slate-900 transition">
+                        <i data-lucide="italic" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="formatDoc('strikeThrough')" title="Strikeout (<s>text</s>)" class="p-1.5 hover:bg-slate-200 rounded text-slate-700 hover:text-slate-900 transition">
+                        <i data-lucide="strikethrough" class="w-4 h-4"></i>
+                    </button>
+                    
+                    <div class="h-6 w-[1px] bg-slate-300 mx-1.5"></div>
+                    
+                    <!-- Headings -->
+                    <button onclick="insertHeader('== Biography ==')" title="Add Biography Section" class="px-2 py-1 text-xs font-semibold bg-green-100 hover:bg-green-200 text-green-800 rounded transition flex items-center gap-1">
+                        Biography
+                    </button>
+                    <button onclick="insertHeader('== Sources ==')" title="Add Sources Section" class="px-2 py-1 text-xs font-semibold bg-green-100 hover:bg-green-200 text-green-800 rounded transition flex items-center gap-1">
+                        Sources
+                    </button>
+                    <button onclick="promptCustomHeading(2)" title="Custom Main Heading" class="px-2 py-1 text-xs bg-slate-200 hover:bg-slate-300 text-slate-800 rounded transition font-medium">
+                        H2
+                    </button>
+                    <button onclick="promptCustomHeading(3)" title="Custom Subheading" class="px-2 py-1 text-xs bg-slate-200 hover:bg-slate-300 text-slate-800 rounded transition font-medium">
+                        H3
+                    </button>
+                    
+                    <div class="h-6 w-[1px] bg-slate-300 mx-1.5"></div>
+                    
+                    <!-- Lists & Indentations -->
+                    <button onclick="insertBullet(1)" title="Bullet point" class="p-1.5 hover:bg-slate-200 rounded text-slate-700 hover:text-slate-900 transition">
+                        <i data-lucide="list" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="insertBullet(2)" title="Nested Bullet point" class="p-1.5 hover:bg-slate-200 rounded text-slate-700 hover:text-slate-900 transition">
+                        <i data-lucide="list-plus" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="insertIndent()" title="Indent Line (: Indented text)" class="p-1.5 hover:bg-slate-200 rounded text-slate-700 hover:text-slate-900 transition">
+                        <i data-lucide="indent" class="w-4 h-4"></i>
+                    </button>
+                    
+                    <div class="h-6 w-[1px] bg-slate-300 mx-1.5"></div>
+                    
+                    <!-- Wiki Specific Utilities -->
+                    <button onclick="openLinkModal('internal')" title="WikiTree Internal Profile Link [[ID|Name]]" class="px-2.5 py-1 text-xs font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 rounded transition flex items-center gap-1">
+                        <i data-lucide="user" class="w-3 h-3"></i> Internal Link
+                    </button>
+                    <button onclick="openLinkModal('external')" title="External URL Link https://www.merriam-webster.com/dictionary/title" class="px-2.5 py-1 text-xs font-bold bg-blue-100 hover:bg-blue-200 text-blue-900 rounded transition flex items-center gap-1">
+                        <i data-lucide="link" class="w-3 h-3"></i> Ext Link
+                    </button>
+                    <button onclick="openRefModal()" title="Insert Inline Footnote/Reference <ref>" class="px-2.5 py-1 text-xs font-bold bg-orange-100 hover:bg-orange-200 text-orange-900 rounded transition flex items-center gap-1">
+                        <i data-lucide="bookmark" class="w-3 h-3"></i> Inline Ref
+                    </button>
+                    <button onclick="openTableModal()" title="Insert Wikitable Template" class="p-1.5 hover:bg-slate-200 rounded text-slate-700 hover:text-slate-900 transition" >
+                        <i data-lucide="table" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Editor Container -->
+                <div class="flex-1 p-4 overflow-y-auto">
+                    <div id="wysiwyg-editor" class="wysiwyg-editor text-slate-800 bg-white min-h-[400px] max-h-[600px] focus:outline-none" contenteditable="true" oninput="translateWysiwygToWikiMarkup()">
+                        <!-- Start with a blank canvas or default instructions -->
+                    </div>
+                </div>
+
+                <!-- Footer tip -->
+                <div class="bg-slate-50 border-t border-slate-150 px-4 py-2 text-xs text-slate-500 flex justify-between items-center">
+                    <span>Press <kbd class="bg-white px-1 border rounded">Enter</kbd> twice for true paragraphs on WikiTree.</span>
+                    <span id="char-count-wysiwyg" class="font-mono">Characters: 0</span>
+                </div>
+            </div>
+            
+            <!-- Right Panel: WikiTree Raw Markdown -->
+            <div class="flex flex-col bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+                <!-- Raw Markdown Header -->
+                <div class="bg-slate-50 border-b border-slate-200 p-3 flex flex-wrap gap-2 items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="code" class="w-4 h-4 text-green-700"></i>
+                        <span class="text-sm font-bold text-slate-700">WikiTree Markup Output / Paste Input</span>
+                    </div>
+                    
+                    <!-- Mode Settings / Sync Switch -->
+                    <div class="flex items-center gap-2">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input id="auto-sync-checkbox" type="checkbox" checked class="sr-only peer">
+                            <div class="relative w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"></div>
+                            <span class="ms-2 text-xs font-medium text-slate-600">Live Sync</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Markdown Content Area -->
+                <div class="flex-1 flex flex-col p-4 bg-slate-900">
+                    <textarea id="wiki-markdown-textarea" 
+                        class="flex-1 w-full p-4 font-mono text-sm text-green-400 bg-slate-950 rounded-lg border border-slate-800 focus:outline-none focus:border-green-600 resize-none min-h-[400px] max-h-[600px]" 
+                        placeholder="Type or paste raw WikiTree profile markup directly here, then click 'Sync to Rich Editor' to edit visually!"
+                        oninput="onMarkdownInput()"></textarea>
+                </div>
+
+                <!-- Operations Toolbar -->
+                <div class="bg-slate-50 border-t border-slate-200 p-3 flex flex-wrap gap-2 justify-between items-center">
+                    <div class="flex gap-2">
+                        <!-- Sync Manual Action -->
+                        <button onclick="translateWikiMarkupToWysiwyg()" title="Convert raw text code to visual formatting" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-4 py-2 rounded text-xs transition flex items-center gap-1">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Sync to Rich Editor
+                        </button>
+                        <!-- Clear Action -->
+                        <button onclick="confirmClear()" title="Remove all text and start over" class="bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold px-4 py-2 rounded text-xs transition flex items-center gap-1">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Clear All
+                        </button>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <!-- Copy Action -->
+                        <button onclick="copyWikiMarkdown()" class="bg-green-700 hover:bg-green-800 text-white font-bold px-5 py-2 rounded text-xs shadow-sm transition flex items-center gap-1.5">
+                            <i data-lucide="clipboard" class="w-3.5 h-3.5"></i> Copy Markup
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Custom Contextual Inline References Previewer -->
+        <div class="bg-amber-50/50 border border-amber-200/60 rounded-xl p-5 shadow-sm">
+            <h3 class="text-sm font-bold text-amber-900 mb-3 flex items-center gap-2">
+                <i data-lucide="list-ordered" class="w-4 h-4 text-amber-700"></i>
+                Profile Footnotes Preview (How citations appear under Sources)
+            </h3>
+            <p class="text-xs text-amber-700 mb-4">
+                As you insert <code class="bg-amber-100 px-1 py-0.5 rounded">&lt;ref&gt;</code> tags in your text, WikiTree compiles them at the bottom in the <code class="bg-amber-100 px-1 py-0.5 rounded">&lt;references/&gt;</code> section. See them rendered in real-time below:
+            </p>
+            <div id="citations-preview" class="space-y-2 text-sm text-slate-700 bg-white p-4 rounded-lg border border-slate-100 min-h-[50px]">
+                <em class="text-slate-400 text-xs">No inline footnotes/references added yet. Use the 'Inline Ref' tool inside the WYSIWYG editor!</em>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- HELP / SYNTAX CHEAT SHEET MODAL -->
+    <div id="help-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col">
+            <div class="brand-green text-white p-4 flex justify-between items-center">
+                <h2 class="font-bold text-lg flex items-center gap-2">
+                    <i data-lucide="help-circle" class="w-5 h-5"></i> WikiTree Formatting Reference
+                </h2>
+                <button onclick="closeHelpModal()" class="text-white/80 hover:text-white transition">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4 text-slate-700 text-sm">
+                <p class="text-xs text-slate-500">
+                    This reference helper is built using guidance directly from WikiTree's official style guides and media projects.
+                </p>
+                
+                <div class="space-y-2">
+                    <h3 class="font-bold text-slate-900 border-b pb-1 text-base">Section Headings</h3>
+                    <p class="text-xs">Headings must be bounded by double equal signs. Avoid single equal signs as they mess with the page title structure.</p>
+                    <pre class="bg-slate-100 p-2 rounded text-xs font-mono">== Biography ==
+== Sources ==
+=== Timeline ===</pre>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="font-bold text-slate-900 border-b pb-1 text-base">Font Enhancements</h3>
+                    <pre class="bg-slate-100 p-2 rounded text-xs font-mono">''Italics''            -> ''text'' (2 apostrophes)
+'''Bold'''             -> '''text''' (3 apostrophes)
+'''''Bold & Italics''''' -> '''''text''''' (5 apostrophes)
+&lt;s&gt;Strikeout&lt;/s&gt;        -> &lt;s&gt;text&lt;/s&gt; HTML tags</pre>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="font-bold text-slate-900 border-b pb-1 text-base">Citations & Footnotes</h3>
+                    <p class="text-xs">Always place citations inside the <code class="bg-slate-100 px-1 py-0.5 rounded">&lt;ref&gt;</code> tag near the statement of fact. Ensure the <code class="bg-slate-100 px-1 py-0.5 rounded">&lt;references/&gt;</code> tag sits underneath the Sources header.</p>
+                    <pre class="bg-slate-100 p-2 rounded text-xs font-mono">He died in Poowong. &lt;ref&gt;Obituary, West Gippsland Gazette, 1901.&lt;/ref&gt;
+
+== Sources ==
+&lt;references/&gt;</pre>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="font-bold text-slate-900 border-b pb-1 text-base">Profiles & Hyperlinks</h3>
+                    <pre class="bg-slate-100 p-2 rounded text-xs font-mono">[[Hornblow-44]]               -> Link to Profile (Displays ID)
+[[Hornblow-44|Martha Horn]]   -> Link to Profile (Displays Custom Text)
+[http://google.com Google]     -> Ext Link (Note the single space separator)</pre>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="font-bold text-slate-900 border-b pb-1 text-base">Tables</h3>
+                    <p class="text-xs">Useful for multi-column census data, gravestone lists, or family indexes.</p>
+                    <pre class="bg-slate-100 p-2 rounded text-xs font-mono">{| class="wikitable"
+|-
+! Year !! Event
+|-
+| 1819 || Born in Sydney
+|-
+| 1901 || Passed away in Victoria
+|}</pre>
+                </div>
+            </div>
+            <div class="border-t bg-slate-50 p-3 text-right">
+                <button onclick="closeHelpModal()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2 rounded text-xs transition">
+                    Understood
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION DIALOG (No browser alerts allowed) -->
+    <div id="toast" class="fixed bottom-6 right-6 hidden bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-lg shadow-xl z-50 flex items-center gap-2 max-w-sm transition-all transform translate-y-2 opacity-0">
+        <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+        <span id="toast-message">Copied successfully!</span>
+    </div>
+
+    <!-- DIALOG / MODAL TEMPLATES -->
+    
+    <!-- Link Insertion Modal -->
+    <div id="link-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
+            <div class="bg-slate-100 border-b p-4 flex justify-between items-center">
+                <h3 id="link-modal-title" class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                    <i data-lucide="link" class="w-4 h-4 text-slate-600"></i> Add Link
+                </h3>
+                <button onclick="closeLinkModal()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="link-modal-type" value="internal">
+                
+                <div class="space-y-1">
+                    <label id="link-modal-label-1" class="block text-xs font-bold text-slate-700">WikiTree Profile ID</label>
+                    <input type="text" id="link-input-1" placeholder="e.g. Hornblow-44" class="w-full p-2 border rounded-md text-sm focus:outline-none focus:border-green-600">
+                    <p id="link-modal-help-1" class="text-[10px] text-slate-500">The explicit WikiTree ID format (Surname-Number).</p>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="block text-xs font-bold text-slate-700">Display Text / Label</label>
+                    <input type="text" id="link-input-2" placeholder="e.g. Martha (Hornblow) Treadwell" class="w-full p-2 border rounded-md text-sm focus:outline-none focus:border-green-600">
+                    <p class="text-[10px] text-slate-500">How the link will visually render in the narrative flow.</p>
+                </div>
+            </div>
+            <div class="border-t bg-slate-50 p-3 flex justify-end gap-2">
+                <button onclick="closeLinkModal()" class="bg-white border hover:bg-slate-50 text-slate-700 text-xs font-semibold px-4 py-2 rounded transition">
+                    Cancel
+                </button>
+                <button onclick="submitLinkInsert()" class="brand-green hover:brand-green-hover text-white text-xs font-bold px-4 py-2 rounded transition">
+                    Insert Link
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inline Reference Modal -->
+    <div id="ref-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
+            <div class="bg-slate-100 border-b p-4 flex justify-between items-center">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                    <i data-lucide="bookmark" class="w-4 h-4 text-orange-600"></i> Insert Footnote / Source Reference
+                </h3>
+                <button onclick="closeRefModal()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="space-y-1">
+                    <label class="block text-xs font-bold text-slate-700">Citing Source Details</label>
+                    <textarea id="ref-textarea" rows="4" placeholder="e.g. West Gippsland Gazette (Warragul, Vic), Tuesday 10 December 1901, Page 3." class="w-full p-2.5 border rounded-md text-sm focus:outline-none focus:border-green-600 font-sans" required></textarea>
+                    <p class="text-[10px] text-slate-500">
+                        Include record details, census page numbers, newspaper titles, or web links. These automatically populate inside the <code>&lt;references /&gt;</code> element.
+                    </p>
+                </div>
+            </div>
+            <div class="border-t bg-slate-50 p-3 flex justify-end gap-2">
+                <button onclick="closeRefModal()" class="bg-white border hover:bg-slate-50 text-slate-700 text-xs font-semibold px-4 py-2 rounded transition">
+                    Cancel
+                </button>
+                <button onclick="submitRefInsert()" class="brand-green hover:brand-green-hover text-white text-xs font-bold px-4 py-2 rounded transition">
+                    Insert Reference
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wikitable Template Modal -->
+    <div id="table-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full overflow-hidden">
+            <div class="bg-slate-100 border-b p-4 flex justify-between items-center">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                    <i data-lucide="table" class="w-4 h-4 text-slate-600"></i> Insert Profile Table
+                </h3>
+                <button onclick="closeTableModal()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-xs text-slate-500">Select formatting defaults to quickly generate an aligned census table or timeline tracker.</p>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-slate-700">Columns</label>
+                        <input type="number" id="table-cols" min="1" max="10" value="3" class="w-full p-2 border rounded text-sm focus:outline-none focus:border-green-600">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-slate-700">Rows</label>
+                        <input type="number" id="table-rows" min="1" max="25" value="3" class="w-full p-2 border rounded text-sm focus:outline-none focus:border-green-600">
+                    </div>
+                </div>
+            </div>
+            <div class="border-t bg-slate-50 p-3 flex justify-end gap-2">
+                <button onclick="closeTableModal()" class="bg-white border hover:bg-slate-50 text-slate-700 text-xs font-semibold px-4 py-2 rounded transition">
+                    Cancel
+                </button>
+                <button onclick="submitTableInsert()" class="brand-green hover:brand-green-hover text-white text-xs font-bold px-4 py-2 rounded transition">
+                    Build Table
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Clear Modal -->
+    <div id="clear-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full overflow-hidden">
+            <div class="p-6 space-y-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-rose-100 text-rose-600 mb-4">
+                    <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                </div>
+                <h3 class="font-bold text-slate-900 text-base">Clear All Content?</h3>
+                <p class="text-xs text-slate-500">
+                    This action will wipe the draft in both panels. You will lose any unsaved biography edits and custom references.
+                </p>
+            </div>
+            <div class="bg-slate-50 p-3 flex justify-center gap-2 border-t">
+                <button onclick="closeClearModal()" class="bg-white border hover:bg-slate-50 text-slate-700 text-xs font-semibold px-4 py-2 rounded transition">
+                    Keep Draft
+                </button>
+                <button onclick="submitClear()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-4 py-2 rounded transition">
+                    Clear Everything
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript logic -->
+    <script>
+        // Init Lucide Icons
+        window.onload = function() {
+            lucide.createIcons();
+            // Load standard template to make page look active immediately
+            loadTemplate('simple');
+        };
+
+        // DOM elements
+        const wysiwygEditor = document.getElementById('wysiwyg-editor');
+        const markdownTextarea = document.getElementById('wiki-markdown-textarea');
+        const autoSyncCheckbox = document.getElementById('auto-sync-checkbox');
+        const citationsPreview = document.getElementById('citations-preview');
+        const charCountWysiwyg = document.getElementById('char-count-wysiwyg');
+
+        // App Config & Selection Tracker
+        let savedRange = null;
+
+        // Custom Templates for Genealogists
+        const templates = {
+            simple: `== Biography ==
+[[Category:Poowong Cemetery]]
+Martha Treadwell formerly '''Hornblow''' was born about 1819. She was the daughter of [father unknown] and [mother unknown].
+
+She married Thomas Treadwell ''[date unknown]'' in England. They emigrated together to Victoria, Australia.
+
+Martha died on November 27, 1901 in Poowong, Victoria. '''''She lived to the advanced age of 82 years.''''' <ref>Obituary, West Gippsland Gazette (Warragul, Vic), Tuesday 10 December 1901.</ref>
+
+== Sources ==
+<references />
+* West Gippsland Gazette (Warragul, Vic), 1901.`,
+            
+            complex: `== Biography ==
+[[Category:Family Brickwall]]
+'''William Oxley''' was born in 1804 in Rolvenden, Kent, England. <ref>England Births & Baptisms, 1538-1975, Parish Register.</ref> 
+
+He married Eliza Santer on April 29, 1829 in Benenden, Kent. <ref>England Marriages, 1538-1973, database FamilySearch.</ref>
+
+=== Timeline ===
+:'''1804:''' Birth of William in Kent, England.
+:'''1829:''' Marriage to Eliza Santer.
+:'''1838:''' Emigrated on ship to Australia.
+:'''1851:''' Appointed as a police constable in Mudgee, New South Wales.
+:'''1853:''' Passed away on May 19 as a result of an assault. <ref>Police Gazette report, Sydney, June 1853.</ref>
+
+== Sources ==
+<references />
+* Additional Family Bible Records owned by the Oxley descendant family.`
+        };
+
+        function loadTemplate(key) {
+            if(templates[key]) {
+                markdownTextarea.value = templates[key];
+                translateWikiMarkupToWysiwyg();
+                showToast("Template loaded successfully!");
+            }
+        }
+
+        // Live Synchronization Check
+        function onMarkdownInput() {
+            if (autoSyncCheckbox.checked) {
+                // For performance, we can translate live as they type in markdown
+                translateWikiMarkupToWysiwyg();
+            }
+        }
+
+        // --- PARSERS & TRANSLATION LAYERS (CORE STRENGTHS) ---
+
+        // 1. Convert Wiki Markup -> WYSIWYG HTML
+        function translateWikiMarkupToWysiwyg() {
+            let wiki = markdownTextarea.value;
+            
+            // Clean/Escape raw HTML before building blocks, to avoid parsing errors
+            let html = wiki
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+
+            // Restore Safe Target Tags with WYSIWYG Specific Elements
+            // References
+            html = html.replace(/&lt;ref&gt;([\s\S]*?)&lt;\/ref&gt;/g, function(match, refText) {
+                return `<span class="wiki-ref" contenteditable="false" data-ref="${escapeHtmlAttribute(refText)}"><sup>[ref]</sup></span>`;
+            });
+            html = html.replace(/&lt;references\s*\/?&gt;/g, '<div class="wiki-references-block" contenteditable="false">&lt;references/&gt;</div>');
+            
+            // Strike tags
+            html = html.replace(/&lt;s&gt;([\s\S]*?)&lt;\/s&gt;/g, '<s>$1</s>');
+            html = html.replace(/&lt;br\s*\/?&gt;/g, '<br/>');
+
+            // Bold & Italics Combinations
+            // Order is important! 5 apostrophes -> 3 apostrophes -> 2 apostrophes
+            html = html.replace(/'''''(.*?)'''''/g, '<strong><em>$1</em></strong>');
+            html = html.replace(/'''(.*?)'''/g, '<strong>$1</strong>');
+            html = html.replace(/''(.*?)''/g, '<em>$1</em>');
+
+            // Categories
+            html = html.replace(/\[\[Category:([^\]]+)\]\]/g, '<span class="wiki-link-internal" contenteditable="false" data-id="Category:$1" data-text="$1">🏷️ Category: $1</span>');
+
+            // Internal Links: [[ID|Text]] or [[ID]]
+            html = html.replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g, '<span class="wiki-link-internal" contenteditable="false" data-id="$1" data-text="$2">👤 $2 <small class="text-[10px] text-green-700 font-mono">($1)</small></span>');
+            html = html.replace(/\[\[([^\]]+)\]\]/g, '<span class="wiki-link-internal" contenteditable="false" data-id="$1" data-text="$1">👤 $1</span>');
+
+            // External Links: https://www.merriam-webster.com/dictionary/text
+            html = html.replace(/\[(https?:\/\/[^\s\]]+)\s+([^\]]+)\]/g, '<span class="wiki-link-external" contenteditable="false" data-url="$1" data-text="$2">🔗 $2</span>');
+
+            // Line processing for Headers, Bullets, Indents, and Tables
+            let lines = html.split('\n');
+            let insideTable = false;
+            let tableRows = [];
+            let processedLines = [];
+
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i];
+
+                // Table parsing (MediaWiki syntax)
+                if (line.trim() === '{| class="wikitable"') {
+                    insideTable = true;
+                    tableRows = [];
+                    continue;
+                }
+                if (insideTable) {
+                    if (line.trim() === '|}') {
+                        insideTable = false;
+                        processedLines.push(buildHtmlTable(tableRows));
+                        continue;
+                    }
+                    tableRows.push(line);
+                    continue;
+                }
+
+                // Headings
+                if (line.startsWith('===')) {
+                    let cleanLine = line.replace(/===/g, '').trim();
+                    processedLines.push(`<h3>${cleanLine}</h3>`);
+                    continue;
+                }
+                if (line.startsWith('==')) {
+                    let cleanLine = line.replace(/==/g, '').trim();
+                    processedLines.push(`<h2>${cleanLine}</h2>`);
+                    continue;
+                }
+
+                // Nested Lists / Bullets
+                if (line.startsWith('**')) {
+                    let cleanLine = line.substring(2).trim();
+                    processedLines.push(`<li class="wiki-li-2">${cleanLine}</li>`);
+                    continue;
+                }
+                if (line.startsWith('*')) {
+                    let cleanLine = line.substring(1).trim();
+                    processedLines.push(`<li class="wiki-li">${cleanLine}</li>`);
+                    continue;
+                }
+
+                // Indentation
+                if (line.startsWith(':')) {
+                    let level = 0;
+                    while(line.charAt(level) === ':') { level++; }
+                    let cleanLine = line.substring(level).trim();
+                    processedLines.push(`<div class="wiki-indent" data-level="${level}" style="margin-left: ${level * 1.5}rem;">${cleanLine}</div>`);
+                    continue;
+                }
+
+                // Wrap typical line breaks inside paragraph/div for visual block representation
+                if (line.trim() === '') {
+                    processedLines.push('<p><br></p>');
+                } else {
+                    processedLines.push(`<div>${line}</div>`);
+                }
+            }
+
+            wysiwygEditor.innerHTML = processedLines.join('');
+            updateReferencesPreviewList();
+            updateCharCount();
+        }
+
+        // Parse tables visually
+        function buildHtmlTable(rows) {
+            let htmlTable = '<table class="border-collapse border border-slate-300 my-4 w-full text-xs" contenteditable="true">';
+            let rowHtml = '';
+            let currentRow = [];
+
+            rows.forEach(r => {
+                let text = r.trim();
+                if (text === '|-') {
+                    if (currentRow.length > 0) {
+                        rowHtml += renderTableRow(currentRow);
+                        currentRow = [];
+                    }
+                } else if (text.startsWith('!') || text.startsWith('|')) {
+                    // Split the cell text by standard separators
+                    let sign = text.charAt(0);
+                    let rest = text.substring(1).trim();
+                    currentRow.push({ type: sign === '!' ? 'th' : 'td', text: rest });
+                }
+            });
+
+            if (currentRow.length > 0) {
+                rowHtml += renderTableRow(currentRow);
+            }
+
+            htmlTable += rowHtml + '</table>';
+            return htmlTable;
+        }
+
+        function renderTableRow(cells) {
+            let r = '<tr class="border-b border-slate-200">';
+            cells.forEach(c => {
+                if (c.type === 'th') {
+                    r += `<th class="border border-slate-300 px-3 py-1.5 bg-slate-100 font-bold text-left">${c.text}</th>`;
+                } else {
+                    r += `<td class="border border-slate-300 px-3 py-1.5">${c.text}</td>`;
+                }
+            });
+            r += '</tr>';
+            return r;
+        }
+
+        // Helper to escape characters for custom HTML attribute blocks safely
+        function escapeHtmlAttribute(str) {
+            return str
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function unescapeHtmlAttribute(str) {
+            return str
+                .replace(/&quot;/g, '"')
+                .replace(/&#39;/g, "'")
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>');
+        }
+
+        // 2. Convert WYSIWYG Editor HTML DOM -> WikiTree Raw Markup
+        function translateWysiwygToWikiMarkup() {
+            let markdown = "";
+            let nodes = wysiwygEditor.childNodes;
+
+            nodes.forEach(node => {
+                markdown += parseNodeToWiki(node) + "\n";
+            });
+
+            // Normalize excess breaks and whitespace cleanups
+            markdown = markdown
+                .replace(/\n{3,}/g, '\n\n')
+                .trim();
+
+            markdownTextarea.value = markdown;
+            updateReferencesPreviewList();
+            updateCharCount();
+        }
+
+        function parseNodeToWiki(node) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                return node.nodeValue;
+            }
+
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                let tagName = node.tagName.toLowerCase();
+                let innerContent = "";
+
+                // Walk inner nodes
+                node.childNodes.forEach(child => {
+                    innerContent += parseNodeToWiki(child);
+                });
+
+                if (tagName === 'h2') {
+                    return `== ${innerContent.trim()} ==\n`;
+                }
+                if (tagName === 'h3') {
+                    return `=== ${innerContent.trim()} ===\n`;
+                }
+                if (tagName === 'strong' || tagName === 'b') {
+                    return `'''${innerContent}'''`;
+                }
+                if (tagName === 'em' || tagName === 'i') {
+                    return `''${innerContent}''`;
+                }
+                if (tagName === 's' || tagName === 'strike') {
+                    return `<s>${innerContent}</s>`;
+                }
+                if (tagName === 'br') {
+                    return ''; // Handled by structural elements
+                }
+                if (tagName === 'div') {
+                    // Check for custom functional class containers
+                    if (node.classList.contains('wiki-references-block')) {
+                        return '<references />\n';
+                    }
+                    if (node.classList.contains('wiki-indent')) {
+                        let level = parseInt(node.getAttribute('data-level')) || 1;
+                        return ":".repeat(level) + " " + innerContent;
+                    }
+                    return innerContent;
+                }
+                if (tagName === 'p') {
+                    return innerContent + "\n";
+                }
+                if (tagName === 'span') {
+                    if (node.classList.contains('wiki-ref')) {
+                        let refVal = unescapeHtmlAttribute(node.getAttribute('data-ref') || "");
+                        return `<ref>${refVal}</ref>`;
+                    }
+                    if (node.classList.contains('wiki-link-internal')) {
+                        let id = node.getAttribute('data-id') || "";
+                        let text = node.getAttribute('data-text') || "";
+                        
+                        // Handle categorized structures
+                        if(id.startsWith('Category:')) {
+                            return `[[${id}]]`;
+                        }
+                        
+                        if (id === text) {
+                            return `[[${id}]]`;
+                        } else {
+                            return `[[${id}|${text}]]`;
+                        }
+                    }
+                    if (node.classList.contains('wiki-link-external')) {
+                        let url = node.getAttribute('data-url') || "";
+                        let text = node.getAttribute('data-text') || "";
+                        return `[${url} ${text}]`;
+                    }
+                    return innerContent;
+                }
+                
+                // Bullet points
+                if (tagName === 'li') {
+                    if (node.classList.contains('wiki-li-2')) {
+                        return `** ${innerContent}`;
+                    }
+                    return `* ${innerContent}`;
+                }
+
+                // Table structure
+                if (tagName === 'table') {
+                    let tMarkup = "{| class=\"wikitable\"\n";
+                    let rows = node.querySelectorAll('tr');
+                    rows.forEach(tr => {
+                        tMarkup += "|-\n";
+                        let cells = tr.querySelectorAll('th, td');
+                        cells.forEach(cell => {
+                            let cellText = cell.innerText.trim();
+                            if (cell.tagName.toLowerCase() === 'th') {
+                                tMarkup += `! ${cellText}\n`;
+                            } else {
+                                tMarkup += `| ${cellText}\n`;
+                            }
+                        });
+                    });
+                    tMarkup += "|}";
+                    return tMarkup;
+                }
+
+                return innerContent;
+            }
+            return "";
+        }
+
+        // Live compile lists of citations to present visually in the bottom feedback pane
+        function updateReferencesPreviewList() {
+            let refs = [];
+            
+            // Search textarea contents directly for actual accuracy
+            let refRegex = /<ref>([\s\S]*?)<\/ref>/g;
+            let match;
+            let textValue = markdownTextarea.value;
+            
+            while ((match = refRegex.exec(textValue)) !== null) {
+                refs.push(match[1]);
+            }
+
+            if (refs.length === 0) {
+                citationsPreview.innerHTML = `<em class="text-slate-400 text-xs">No inline footnotes/references added yet. Use the 'Inline Ref' tool inside the WYSIWYG editor!</em>`;
+                return;
+            }
+
+            let previewHtml = '<ol class="list-decimal pl-5 space-y-1.5 text-xs font-sans text-slate-700">';
+            refs.forEach((ref, index) => {
+                previewHtml += `<li><span class="text-slate-600">${ref}</span></li>`;
+            });
+            previewHtml += '</ol>';
+            citationsPreview.innerHTML = previewHtml;
+        }
+
+        function updateCharCount() {
+            let textLen = wysiwygEditor.innerText ? wysiwygEditor.innerText.trim().length : 0;
+            charCountWysiwyg.textContent = `Characters: ${textLen}`;
+        }
+
+
+        // --- RICH EDITOR MANIPULATION ACTIONS ---
+
+        // Apply visual formats locally using browser contenteditable engine
+        function formatDoc(cmd, val = null) {
+            document.execCommand(cmd, false, val);
+            wysiwygEditor.focus();
+            translateWysiwygToWikiMarkup();
+        }
+
+        function insertHeader(rawHeader) {
+            let clean = rawHeader.replace(/=/g, '').trim();
+            let size = rawHeader.startsWith('===') ? 'h3' : 'h2';
+            
+            let tag = document.createElement(size);
+            tag.innerText = clean;
+            
+            insertNodeAtCursor(tag);
+            translateWysiwygToWikiMarkup();
+        }
+
+        function promptCustomHeading(level) {
+            let title = prompt(`Enter Header text for H${level}:`);
+            if (title && title.trim()) {
+                let tag = document.createElement(`h${level}`);
+                tag.innerText = title.trim();
+                insertNodeAtCursor(tag);
+                translateWysiwygToWikiMarkup();
+            }
+        }
+
+        function insertBullet(level) {
+            let text = prompt("Enter bullet item text:");
+            if (text && text.trim()) {
+                let li = document.createElement('li');
+                li.className = level === 2 ? 'wiki-li-2' : 'wiki-li';
+                li.innerText = text.trim();
+                insertNodeAtCursor(li);
+                translateWysiwygToWikiMarkup();
+            }
+        }
+
+        function insertIndent() {
+            let text = prompt("Enter text to indent:");
+            if (text && text.trim()) {
+                let div = document.createElement('div');
+                div.className = "wiki-indent";
+                div.setAttribute('data-level', "1");
+                div.style.marginLeft = "1.5rem";
+                div.innerText = text.trim();
+                insertNodeAtCursor(div);
+                translateWysiwygToWikiMarkup();
+            }
+        }
+
+        // --- CUSTOM MODALS IMPLEMENTATION (NO ALERT SYSTEM) ---
+
+        function openLinkModal(type) {
+            saveSelection();
+            document.getElementById('link-modal-type').value = type;
+            
+            const title = document.getElementById('link-modal-title');
+            const label1 = document.getElementById('link-modal-label-1');
+            const help1 = document.getElementById('link-modal-help-1');
+            
+            if (type === 'internal') {
+                title.innerHTML = `<i data-lucide="user" class="w-4 h-4 text-green-700"></i> Insert Internal Profile Link`;
+                label1.textContent = "WikiTree Profile ID";
+                help1.textContent = "Surname-Number format (e.g. Hornblow-44)";
+                document.getElementById('link-input-1').placeholder = "e.g. Hornblow-44";
+            } else {
+                title.innerHTML = `<i data-lucide="link" class="w-4 h-4 text-blue-600"></i> Insert External Link`;
+                label1.textContent = "Web URL Address";
+                help1.textContent = "Full URL including http/https prefix";
+                document.getElementById('link-input-1').placeholder = "e.g. https://www.archives.gov";
+            }
+
+            // Prefill selected text as display label
+            const selectedText = getSelectedText();
+            if(selectedText) {
+                document.getElementById('link-input-2').value = selectedText;
+            } else {
+                document.getElementById('link-input-2').value = "";
+            }
+            document.getElementById('link-input-1').value = "";
+
+            document.getElementById('link-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeLinkModal() {
+            document.getElementById('link-modal').classList.add('hidden');
+            restoreSelection();
+        }
+
+        function submitLinkInsert() {
+            const type = document.getElementById('link-modal-type').value;
+            const arg1 = document.getElementById('link-input-1').value.trim();
+            const arg2 = document.getElementById('link-input-2').value.trim();
+
+            if (!arg1) {
+                showToast("Please provide the required URL or Profile ID target.");
+                return;
+            }
+
+            restoreSelection();
+            let span = document.createElement('span');
+
+            if (type === 'internal') {
+                span.className = "wiki-link-internal";
+                span.setAttribute('contenteditable', "false");
+                span.setAttribute('data-id', arg1);
+                span.setAttribute('data-text', arg2 || arg1);
+                span.innerHTML = `👤 ${arg2 || arg1} <small class="text-[10px] text-green-700 font-mono">(${arg1})</small>`;
+            } else {
+                span.className = "wiki-link-external";
+                span.setAttribute('contenteditable', "false");
+                span.setAttribute('data-url', arg1);
+                span.setAttribute('data-text', arg2 || arg1);
+                span.innerHTML = `🔗 ${arg2 || arg1}`;
+            }
+
+            insertNodeAtCursor(span);
+            closeLinkModal();
+            translateWysiwygToWikiMarkup();
+        }
+
+        // Footnotes / Reference Modal
+        function openRefModal() {
+            saveSelection();
+            document.getElementById('ref-textarea').value = "";
+            document.getElementById('ref-modal').classList.remove('hidden');
+        }
+
+        function closeRefModal() {
+            document.getElementById('ref-modal').classList.add('hidden');
+            restoreSelection();
+        }
+
+        function submitRefInsert() {
+            const details = document.getElementById('ref-textarea').value.trim();
+            if (!details) {
+                showToast("Citation source text cannot be empty.");
+                return;
+            }
+
+            restoreSelection();
+            let span = document.createElement('span');
+            span.className = "wiki-ref";
+            span.setAttribute('contenteditable', "false");
+            span.setAttribute('data-ref', escapeHtmlAttribute(details));
+            span.innerHTML = `<sup>[ref]</sup>`;
+
+            insertNodeAtCursor(span);
+            closeRefModal();
+            translateWysiwygToWikiMarkup();
+        }
+
+        // Table Insertion Modal
+        function openTableModal() {
+            saveSelection();
+            document.getElementById('table-modal').classList.remove('hidden');
+        }
+
+        function closeTableModal() {
+            document.getElementById('table-modal').classList.add('hidden');
+            restoreSelection();
+        }
+
+        function submitTableInsert() {
+            const cols = parseInt(document.getElementById('table-cols').value) || 2;
+            const rows = parseInt(document.getElementById('table-rows').value) || 2;
+
+            restoreSelection();
+
+            // Build structural HTML Nodes representation
+            let table = document.createElement('table');
+            table.className = "border-collapse border border-slate-300 my-4 w-full text-xs";
+            table.setAttribute('contenteditable', 'true');
+
+            for (let r = 0; r < rows; r++) {
+                let tr = document.createElement('tr');
+                tr.className = "border-b border-slate-200";
+                for (let c = 0; c < cols; c++) {
+                    let cell = document.createElement(r === 0 ? 'th' : 'td');
+                    cell.className = r === 0 
+                        ? "border border-slate-300 px-3 py-1.5 bg-slate-100 font-bold text-left" 
+                        : "border border-slate-300 px-3 py-1.5";
+                    cell.innerText = r === 0 ? `Header ${c+1}` : `Data Row ${r} Col ${c+1}`;
+                    tr.appendChild(cell);
+                }
+                table.appendChild(tr);
+            }
+
+            insertNodeAtCursor(table);
+            closeTableModal();
+            translateWysiwygToWikiMarkup();
+        }
+
+        // Clean Up Controls
+        function confirmClear() {
+            document.getElementById('clear-modal').classList.remove('hidden');
+        }
+
+        function closeClearModal() {
+            document.getElementById('clear-modal').classList.add('hidden');
+        }
+
+        function submitClear() {
+            wysiwygEditor.innerHTML = "";
+            markdownTextarea.value = "";
+            updateReferencesPreviewList();
+            updateCharCount();
+            closeClearModal();
+            showToast("Draft cleared.");
+        }
+
+
+        // --- HELPERS FOR CURSOR POSITION AND CLIPBOARD (document.execCommand REQUIRED) ---
+
+        function saveSelection() {
+            if (window.getSelection) {
+                let sel = window.getSelection();
+                if (sel.getRangeAt && sel.rangeCount) {
+                    savedRange = sel.getRangeAt(0);
+                }
+            }
+        }
+
+        function restoreSelection() {
+            if (savedRange) {
+                if (window.getSelection) {
+                    let sel = window.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(savedRange);
+                }
+            }
+        }
+
+        function getSelectedText() {
+            if (window.getSelection) {
+                return window.getSelection().toString();
+            }
+            return "";
+        }
+
+        function insertNodeAtCursor(node) {
+            let sel, range;
+            if (window.getSelection) {
+                sel = window.getSelection();
+                if (sel.getRangeAt && sel.rangeCount) {
+                    range = sel.getRangeAt(0);
+                    range.deleteContents();
+                    
+                    // Insert node
+                    range.insertNode(node);
+                    
+                    // Put cursor after the node
+                    range = range.cloneRange();
+                    range.setStartAfter(node);
+                    range.collapse(true);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+            }
+        }
+
+        // Clipboard action utilizing system spec rule to prevent frame blocking:
+        function copyWikiMarkdown() {
+            markdownTextarea.select();
+            markdownTextarea.setSelectionRange(0, 99999); // Mobile compatibility
+
+            try {
+                // Execute standard copy sequence
+                document.execCommand('copy');
+                showToast("Markup copied directly to clipboard!");
+            } catch (err) {
+                showToast("Failed to copy. Please copy the text block manually.");
+            }
+        }
+
+        // Clean custom modal alert alternative
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = msg;
+            
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('opacity-100');
+                toast.classList.remove('translate-y-2');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('translate-y-2');
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                }, 300);
+            }, 3000);
+        }
+
+        // Syntax Help Modals
+        function openHelpModal() {
+            document.getElementById('help-modal').classList.remove('hidden');
+        }
+
+        function closeHelpModal() {
+            document.getElementById('help-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
